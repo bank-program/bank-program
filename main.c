@@ -180,6 +180,173 @@ void addAccount(Account accounts[], int *total) {
         printf("Error: Could not update account.txt\n");
     }
 }
+void deleteAccount(Account accounts[], int *total) {
+    char accNum[20];
+    printf("Enter account number to delete: ");
+    scanf("%s", accNum);
+
+    int index = -1;
+
+    for (int i = 0; i < *total; i++) {
+        if (strcmp(accounts[i].accountNumber, accNum) == 0) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1) {
+        printf("Error: Account number does not exist.\n");
+        return;
+    }
+
+    if (accounts[index].balance > 0) {
+        printf("Deletion rejected: Account balance is not zero.\n");
+        return;
+    }
+
+    for (int i = index; i < *total - 1; i++) {
+        accounts[i] = accounts[i + 1];
+    }
+    (*total)--;
+
+
+    FILE *fp = fopen("account.txt", "w");
+    if (!fp) {
+        printf("Error updating file.\n");
+        return;
+    }
+
+    for (int i = 0; i < *total; i++) {
+        fprintf(fp, "%s,%s,%s,%.2lf,%s,%02d-%d,%s\n",
+                accounts[i].accountNumber,
+                accounts[i].name,
+                accounts[i].address,
+                accounts[i].balance,
+                accounts[i].mobile,
+                accounts[i].dob.month,
+                accounts[i].dob.year,
+                accounts[i].status);
+    }
+
+    fclose(fp);
+    printf("Account deleted successfully.\n");
+}
+void modifyAccount(Account accounts[], int total) {
+    char accNum[20];
+    printf("Enter account number to modify: ");
+    scanf("%s", accNum);
+
+    int index = -1;
+
+    for (int i = 0; i < total; i++) {
+        if (strcmp(accounts[i].accountNumber, accNum) == 0) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1) {
+        printf("Error: Account number does not exist.\n");
+        return;
+    }
+
+    printf("\nAccount found. Enter new details:\n");
+
+    printf("Enter new name (current: %s): ", accounts[index].name);
+    scanf(" %[^\n]", accounts[index].name);
+
+
+    printf("Enter new email (current: %s): ", accounts[index].address);
+    scanf("%s", accounts[index].address);
+
+    printf("Enter new mobile (current: %s): ", accounts[index].mobile);
+    scanf("%s", accounts[index].mobile);
+
+    FILE *fp = fopen("account.txt", "w");
+    if (!fp) {
+        printf("Error updating file.\n");
+        return;
+    }
+
+    for (int i = 0; i < total; i++) {
+        fprintf(fp, "%s,%s,%s,%.2lf,%s,%02d-%d,%s\n",
+                accounts[i].accountNumber,
+                accounts[i].name,
+                accounts[i].address,
+                accounts[i].balance,
+                accounts[i].mobile,
+                accounts[i].dob.month,
+                accounts[i].dob.year,
+                accounts[i].status);
+    }
+
+    fclose(fp);
+    printf("Account updated successfully.\n");
+}
+void changeStatus(Account accounts[], int total) {
+    char accNum[20];
+    printf("Enter account number: ");
+    scanf("%s", accNum);
+
+    int index = -1;
+
+    // search for account
+    for (int i = 0; i < total; i++) {
+        if (strcmp(accounts[i].accountNumber, accNum) == 0) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1) {
+        printf("Error: Account does not exist.\n");
+        return;
+    }
+
+    printf("Current account status: %s\n", accounts[index].status);
+    printf("Enter new status (active / inactive): ");
+
+    char newStatus[20];
+    scanf("%s", newStatus);
+    toLower(newStatus);
+
+
+    if (strcmp(accounts[index].status, newStatus) == 0) {
+        printf("Attention: Account is already %s.!\n", newStatus);
+        return;
+    }
+
+
+    if (strcmp(newStatus, "active") != 0 && strcmp(newStatus, "inactive") != 0) {
+        printf("Error: Invalid status.\n");
+        return;
+    }
+
+    strcpy(accounts[index].status, newStatus);
+
+
+    FILE *fp = fopen("account.txt", "w");
+    if (!fp) {
+        printf("Error updating file.\n");
+        return;
+    }
+
+    for (int i = 0; i < total; i++) {
+        fprintf(fp, "%s,%s,%s,%.2lf,%s,%02d-%d,%s\n",
+                accounts[i].accountNumber,
+                accounts[i].name,
+                accounts[i].address,
+                accounts[i].balance,
+                accounts[i].mobile,
+                accounts[i].dob.month,
+                accounts[i].dob.year,
+                accounts[i].status);
+    }
+
+    fclose(fp);
+    printf("Account status updated successfully.\n");
+}
+
 
 int main() {
     FILE *fp;
@@ -218,13 +385,17 @@ int main() {
     printf("%d accounts loaded successfully.\n", totalAccounts);
 
     int choice;
-    printf("\nChoose operation:\n1. Add Account\n2. Query Account\n3. Advanced Search\nEnter choice: ");
+    printf("\nChoose operation:\n1. Add Account\n2. Query Account\n3. Advanced Search\n4. Delete Account\n5. Modify Account\n6. Change Account Status\nEnter choice: ");
     scanf("%d", &choice);
 
     if (choice == 1) addAccount(accounts, &totalAccounts);
     else if (choice == 2) queryAccount(accounts, totalAccounts);
     else if (choice == 3) advancedSearch(accounts, totalAccounts);
+    else if (choice == 4) deleteAccount(accounts, &totalAccounts);
+    else if (choice == 5) modifyAccount(accounts, totalAccounts);
+    else if (choice == 6) changeStatus(accounts, totalAccounts);
     else printf("Invalid choice.\n");
 
     return 0;
 }
+
