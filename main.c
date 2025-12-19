@@ -290,7 +290,7 @@ void changeStatus(Account accounts[], int total) {
 
     int index = -1;
 
-    // search for account
+
     for (int i = 0; i < total; i++) {
         if (strcmp(accounts[i].accountNumber, accNum) == 0) {
             index = i;
@@ -398,4 +398,5 @@ int main() {
 
     return 0;
 }
+
 
