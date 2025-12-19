@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_ACCOUNTS 1000
 
@@ -10,7 +11,7 @@ typedef struct {
 } Date;
 
 typedef struct {
-    int accountNumber;
+    char accountNumber[20];
     char name[100];
     char address[100];
     double balance;
@@ -18,6 +19,21 @@ typedef struct {
     Date dob;
     char status[20];
 } Account;
+
+const char* getMonthName(int month) {
+    const char* months[] = {
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    };
+    if (month >= 1 && month <= 12) return months[month-1];
+    return "Unknown";
+}
+
+void toLower(char *str) {
+    for (int i = 0; str[i]; i++) {
+        str[i] = tolower(str[i]);
+    }
+}
 
 int loadAccounts(Account accounts[]) {
     FILE *fp = fopen("account.txt", "r");
@@ -34,7 +50,7 @@ int loadAccounts(Account accounts[]) {
 
         char *token;
         token = strtok(line, ",");
-        accounts[total].accountNumber = atoi(token);
+        strcpy(accounts[total].accountNumber, token);
 
         token = strtok(NULL, ",");
         strcpy(accounts[total].name, token);
@@ -62,19 +78,19 @@ int loadAccounts(Account accounts[]) {
 }
 
 void queryAccount(Account accounts[], int total) {
-    int searchNumber;
+    char searchNumber[20];
     printf("Enter Account Number to search: ");
-    scanf("%d", &searchNumber);
+    scanf("%s", searchNumber);
 
     int found = 0;
     for (int i = 0; i < total; i++) {
-        if (accounts[i].accountNumber == searchNumber) {
-            printf("Account Number: %d\n", accounts[i].accountNumber);
+        if (strcmp(accounts[i].accountNumber, searchNumber) == 0) {
+            printf("Account Number: %s\n", accounts[i].accountNumber);
             printf("Name: %s\n", accounts[i].name);
             printf("Address: %s\n", accounts[i].address);
             printf("Balance: %.2lf\n", accounts[i].balance);
             printf("Mobile: %s\n", accounts[i].mobile);
-            printf("Date of Birth: %02d-%d\n", accounts[i].dob.month, accounts[i].dob.year);
+            printf("Date of Birth: %s %d\n", getMonthName(accounts[i].dob.month), accounts[i].dob.year);
             printf("Status: %s\n", accounts[i].status);
             found = 1;
             break;
@@ -83,6 +99,85 @@ void queryAccount(Account accounts[], int total) {
 
     if (!found) {
         printf("Account not found.\n");
+    }
+}
+
+void advancedSearch(Account accounts[], int total) {
+    char keyword[50];
+    printf("Enter keyword: ");
+    scanf("%s", keyword);
+    toLower(keyword);
+
+    int found = 0;
+    for (int i = 0; i < total; i++) {
+        char temp[100];
+        strcpy(temp, accounts[i].name);
+        toLower(temp);
+
+        if (strstr(temp, keyword)) {
+            printf("Account Number: %s\n", accounts[i].accountNumber);
+            printf("Name: %s\n", accounts[i].name);
+            printf("Address: %s\n", accounts[i].address);
+            printf("Balance: %.2lf\n", accounts[i].balance);
+            printf("Mobile: %s\n", accounts[i].mobile);
+            printf("Date of Birth: %s %d\n", getMonthName(accounts[i].dob.month), accounts[i].dob.year);
+            printf("Status: %s\n\n", accounts[i].status);
+            found = 1;
+        }
+    }
+    if (!found) printf("No matches found.\n");
+}
+
+void addAccount(Account accounts[], int *total) {
+    Account newAcc;
+
+    printf("Enter Account Number: ");
+    scanf("%s", newAcc.accountNumber);
+
+    for (int i = 0; i < *total; i++) {
+        if (strcmp(accounts[i].accountNumber, newAcc.accountNumber) == 0) {
+            printf("Error: Account number already exists!\n");
+            return;
+        }
+    }
+
+    printf("Enter Name: ");
+    scanf(" %[^\n]", newAcc.name);
+
+    printf("Enter Address (email): ");
+    scanf("%s", newAcc.address);
+
+    printf("Enter Balance: ");
+    scanf("%lf", &newAcc.balance);
+
+    printf("Enter Mobile: ");
+    scanf("%s", newAcc.mobile);
+
+    printf("Enter month opened (1-12): ");
+    scanf("%d", &newAcc.dob.month);
+    printf("Enter year opened: ");
+    scanf("%d", &newAcc.dob.year);
+
+    strcpy(newAcc.status, "active");
+
+    accounts[*total] = newAcc;
+    (*total)++;
+
+    FILE *fp = fopen("account.txt", "a");
+    if (fp) {
+        fprintf(fp, "%s,%s,%s,%.2lf,%s,%02d-%d,%s\n",
+                newAcc.accountNumber,
+                newAcc.name,
+                newAcc.address,
+                newAcc.balance,
+                newAcc.mobile,
+                newAcc.dob.month,
+                newAcc.dob.year,
+                newAcc.status);
+        fclose(fp);
+        printf("Account added successfully!\n");
+    } else {
+        printf("Error: Could not update account.txt\n");
     }
 }
 
@@ -122,8 +217,14 @@ int main() {
     int totalAccounts = loadAccounts(accounts);
     printf("%d accounts loaded successfully.\n", totalAccounts);
 
-    queryAccount(accounts, totalAccounts);
+    int choice;
+    printf("\nChoose operation:\n1. Add Account\n2. Query Account\n3. Advanced Search\nEnter choice: ");
+    scanf("%d", &choice);
+
+    if (choice == 1) addAccount(accounts, &totalAccounts);
+    else if (choice == 2) queryAccount(accounts, totalAccounts);
+    else if (choice == 3) advancedSearch(accounts, totalAccounts);
+    else printf("Invalid choice.\n");
 
     return 0;
 }
-
