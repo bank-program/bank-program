@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
+#define DAILY_LIMIT 50000
+#define TRANSACTION_LIMIT 10000
 #define MAX_ACCOUNTS 1000
+#define DEPOSIT_LIMIT 10000
 
 typedef struct {
     int month;
@@ -18,6 +20,10 @@ typedef struct {
     char mobile[20];
     Date dob;
     char status[20];
+    double dailyWithdrawn;
+    int lastDay;
+    int lastMonth;
+    int lastYear;
 } Account;
 
 const char* getMonthName(int month) {
@@ -346,8 +352,54 @@ void changeStatus(Account accounts[], int total) {
     fclose(fp);
     printf("Account status updated successfully.\n");
 }
+void withdraw(Account *acc, double amount, int day, int month, int year) {
+    if (strcmp(acc->status, "inactive") == 0) {
+        printf("Warning: Account is inactive. Transaction cannot be completed.\n");
+        return;
+    }
+
+    if (amount > TRANSACTION_LIMIT) {
+        printf("Error: Maximum withdrawal per transaction is %.2f\n", (double)TRANSACTION_LIMIT);
+        return;
+    }
+
+    if (acc->lastDay != day || acc->lastMonth != month || acc->lastYear != year) {
+        acc->dailyWithdrawn = 0;
+        acc->lastDay = day;
+        acc->lastMonth = month;
+        acc->lastYear = year;
+    }
+
+    if (acc->dailyWithdrawn + amount > DAILY_LIMIT) {
+        printf("Error: Daily withdrawal limit of %.2f exceeded!\n", (double)DAILY_LIMIT);
+        return;
+    }
+
+    if (acc->balance < amount) {
+        printf("Error: Insufficient balance.\n");
+        return;
+    }
+
+    acc->balance -= amount;
+    acc->dailyWithdrawn += amount;
+    printf("Withdrawal successful! New balance: %.2f\n", acc->balance);
+}
 
 
+void deposit(Account *acc, double amount) {
+    if (strcmp(acc->status, "inactive") == 0) {
+        printf("Warning: Account is inactive. Transaction cannot be completed.\n");
+        return;
+    }
+
+    if (amount > DEPOSIT_LIMIT) {
+        printf("Error: Maximum deposit per transaction is %.2f\n", (double)DEPOSIT_LIMIT);
+        return;
+    }
+
+    acc->balance += amount;
+    printf("Deposit successful! New balance: %.2f\n", acc->balance);
+}
 int main() {
     FILE *fp;
     char fileUser[50], filePass[50];
@@ -385,18 +437,87 @@ int main() {
     printf("%d accounts loaded successfully.\n", totalAccounts);
 
     int choice;
-    printf("\nChoose operation:\n1. Add Account\n2. Query Account\n3. Advanced Search\n4. Delete Account\n5. Modify Account\n6. Change Account Status\nEnter choice: ");
-    scanf("%d", &choice);
+    do {
+        printf("\nChoose operation:\n");
+        printf("1. Add Account\n");
+        printf("2. Query Account\n");
+        printf("3. Advanced Search\n");
+        printf("4. Delete Account\n");
+        printf("5. Modify Account\n");
+        printf("6. Change Account Status\n");
+        printf("7. Withdraw\n");
+        printf("8. Deposit\n");
+        printf("9. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
 
-    if (choice == 1) addAccount(accounts, &totalAccounts);
-    else if (choice == 2) queryAccount(accounts, totalAccounts);
-    else if (choice == 3) advancedSearch(accounts, totalAccounts);
-    else if (choice == 4) deleteAccount(accounts, &totalAccounts);
-    else if (choice == 5) modifyAccount(accounts, totalAccounts);
-    else if (choice == 6) changeStatus(accounts, totalAccounts);
-    else printf("Invalid choice.\n");
+        if (choice == 1) addAccount(accounts, &totalAccounts);
+        else if (choice == 2) queryAccount(accounts, totalAccounts);
+        else if (choice == 3) advancedSearch(accounts, totalAccounts);
+        else if (choice == 4) deleteAccount(accounts, &totalAccounts);
+        else if (choice == 5) modifyAccount(accounts, totalAccounts);
+        else if (choice == 6) changeStatus(accounts, totalAccounts);
+        else if (choice == 7) {
+            char accNum[20];
+            double amount;
+            int day, month, year;
+
+            printf("Enter account number: ");
+            scanf("%s", accNum);
+
+            int index = -1;
+            for (int i = 0; i < totalAccounts; i++) {
+                if (strcmp(accounts[i].accountNumber, accNum) == 0) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index == -1) {
+                printf("Account not found.\n");
+            } else {
+                if (strcmp(accounts[index].status, "inactive") == 0) {
+                    printf("Warning: Account is inactive. Transaction cannot be completed.\n");
+                } else {
+                    printf("Enter withdrawal amount: ");
+                    scanf("%lf", &amount);
+                    printf("Enter today date (day month year): ");
+                    scanf("%d %d %d", &day, &month, &year);
+                    withdraw(&accounts[index], amount, day, month, year);
+                }
+            }
+        }
+        else if (choice == 8) {
+            char accNum[20];
+            double amount;
+
+            printf("Enter account number: ");
+            scanf("%s", accNum);
+
+            int index = -1;
+            for (int i = 0; i < totalAccounts; i++) {
+                if (strcmp(accounts[i].accountNumber, accNum) == 0) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index == -1) {
+                printf("Account not found.\n");
+            } else {
+                if (strcmp(accounts[index].status, "inactive") == 0) {
+                    printf("Warning: Account is inactive. Transaction cannot be completed.\n");
+                } else {
+                    printf("Enter deposit amount: ");
+                    scanf("%lf", &amount);
+                    deposit(&accounts[index], amount);
+                }
+            }
+        }
+        else if (choice == 9) break;
+        else printf("Invalid choice.\n");
+
+    } while (choice != 9);
 
     return 0;
 }
-
-
