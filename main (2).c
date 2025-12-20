@@ -382,10 +382,8 @@ void withdraw(Account *acc, double amount, int day, int month, int year) {
 
     acc->balance -= amount;
     acc->dailyWithdrawn += amount;
-    printf("Withdrawal successful! New balance: %.2f\n", acc->balance);
+    printf("Withdrawal successful! New balance for %s account is: %.2f\n", acc->name, acc->balance);
 }
-
-
 void deposit(Account *acc, double amount) {
     if (strcmp(acc->status, "inactive") == 0) {
         printf("Warning: Account is inactive. Transaction cannot be completed.\n");
@@ -398,7 +396,7 @@ void deposit(Account *acc, double amount) {
     }
 
     acc->balance += amount;
-    printf("Deposit successful! New balance: %.2f\n", acc->balance);
+    printf("Deposit successful! New balance for %s account is: %.2f\n", acc->name, acc->balance);
 }
 int main() {
     FILE *fp;
