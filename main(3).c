@@ -569,135 +569,207 @@ void report() {
         printf("%s\n", lines[i]);
     }
 }
+void displayAccount(Account acc) {
+    printf("Account Number: %s\n", acc.accountNumber);
+    printf("Name: %s\n", acc.name);
+    printf("Address: %s\n", acc.address);
+    printf("Balance: %.2lf\n", acc.balance);
+    printf("Mobile: %s\n", acc.mobile);
+    printf("Date of Birth: %s %d\n", getMonthName(acc.dob.month), acc.dob.year);
+    printf("Status: %s\n\n", acc.status);
+}
 
-
-int main() {
-    FILE *fp;
-    char fileUser[50], filePass[50];
-    char username[50], userpass[50];
-    int found = 0;
-
-    fp = fopen("user.txt", "r");
-    if (!fp) {
-        printf("Error opening users file.\n");
-        return 1;
-    }
-
-    printf("Enter Username: ");
-    scanf("%s", username);
-    printf("Enter Password: ");
-    scanf("%s", userpass);
-
-    while (fscanf(fp, "%s %s", fileUser, filePass) != EOF) {
-        if (strcmp(username, fileUser) == 0 && strcmp(userpass, filePass) == 0) {
-            found = 1;
-            break;
+void sortByName(Account accounts[], int total) {
+    for (int i = 0; i < total - 1; i++) {
+        for (int j = 0; j < total - i - 1; j++) {
+            if (strcmp(accounts[j].name, accounts[j+1].name) > 0) {
+                Account temp = accounts[j];
+                accounts[j] = accounts[j+1];
+                accounts[j+1] = temp;
+            }
         }
     }
-    fclose(fp);
+}
 
-    if (!found) {
-        printf("Invalid username or password.\n");
-        return 0;
+void sortByBalance(Account accounts[], int total) {
+    for (int i = 0; i < total - 1; i++) {
+        for (int j = 0; j < total - i - 1; j++) {
+            if (accounts[j].balance > accounts[j+1].balance) {
+                Account temp = accounts[j];
+                accounts[j] = accounts[j+1];
+                accounts[j+1] = temp;
+            }
+        }
     }
+}
 
-    printf("Login successful!\n");
+void sortByDate(Account accounts[], int total) {
+    for (int i = 0; i < total - 1; i++) {
+        for (int j = 0; j < total - i - 1; j++) {
+            if (accounts[j].dob.year > accounts[j+1].dob.year ||
+               (accounts[j].dob.year == accounts[j+1].dob.year &&
+                accounts[j].dob.month > accounts[j+1].dob.month)) {
+                Account temp = accounts[j];
+                accounts[j] = accounts[j+1];
+                accounts[j+1] = temp;
+            }
+        }
+    }
+}
 
-    Account accounts[MAX_ACCOUNTS];
-    int totalAccounts = loadAccounts(accounts);
-    printf("%d accounts loaded successfully.\n", totalAccounts);
+void sortByStatus(Account accounts[], int total) {
+    for (int i = 0; i < total - 1; i++) {
+        for (int j = 0; j < total - i - 1; j++) {
+            if (strcmp(accounts[j].status, accounts[j+1].status) > 0) {
+                Account temp = accounts[j];
+                accounts[j] = accounts[j+1];
+                accounts[j+1] = temp;
+            }
+        }
+    }
+}
 
+void print(Account accounts[], int total) {
     int choice;
-    do {
-        printf("\nChoose operation:\n");
-        printf("1. Add Account\n");
-        printf("2. Query Account\n");
-        printf("3. Advanced Search\n");
-        printf("4. Delete Account\n");
-        printf("5. Modify Account\n");
-        printf("6. Change Account Status\n");
-        printf("7. Withdraw\n");
-        printf("8. Deposit\n");
-        printf("9. Exit\n");
-        printf("10. Transfer\n");
-         printf("11. Report (Last 5 Transactions)\n");
-        printf("Enter choice: ");
+    printf("Sort by:\n");
+    printf("1. Name\n");
+    printf("2. Balance\n");
+    printf("3. Date Opened\n");
+    printf("4. Status\n");
+    printf("Enter choice: ");
+    scanf("%d", &choice);
 
-        scanf("%d", &choice);
+    if (choice == 1) sortByName(accounts, total);
+    else if (choice == 2) sortByBalance(accounts, total);
+    else if (choice == 3) sortByDate(accounts, total);
+    else if (choice == 4) sortByStatus(accounts, total);
+    else {
+        printf("Invalid choice.\n");
+        return;
+    }
 
-        if (choice == 1) addAccount(accounts, &totalAccounts);
-        else if (choice == 2) queryAccount(accounts, totalAccounts);
-        else if (choice == 3) advancedSearch(accounts, totalAccounts);
-        else if (choice == 4) deleteAccount(accounts, &totalAccounts);
-        else if (choice == 5) modifyAccount(accounts, totalAccounts);
-        else if (choice == 6) changeStatus(accounts, totalAccounts);
-        else if (choice == 7) {
-            char accNum[20];
-            double amount;
-            int day, month, year;
-
-            printf("Enter account number: ");
-            scanf("%s", accNum);
-
-            int index = -1;
-            for (int i = 0; i < totalAccounts; i++) {
-                if (strcmp(accounts[i].accountNumber, accNum) == 0) {
-                    index = i;
-                    break;
-                }
-            }
-
-            if (index == -1) {
-                printf("Account not found.\n");
-            } else {
-                if (strcmp(accounts[index].status, "inactive") == 0) {
-                    printf("Warning: Account is inactive. Transaction cannot be completed.\n");
-                } else {
-                    printf("Enter withdrawal amount: ");
-                    scanf("%lf", &amount);
-                    printf("Enter today date (day month year): ");
-                    scanf("%d %d %d", &day, &month, &year);
-                    withdraw(&accounts[index], amount, day, month, year);
-                }
-            }
-        }
-        else if (choice == 8) {
-            char accNum[20];
-            double amount;
-
-            printf("Enter account number: ");
-            scanf("%s", accNum);
-
-            int index = -1;
-            for (int i = 0; i < totalAccounts; i++) {
-                if (strcmp(accounts[i].accountNumber, accNum) == 0) {
-                    index = i;
-                    break;
-                }
-            }
-
-            if (index == -1) {
-                printf("Account not found.\n");
-            } else {
-                if (strcmp(accounts[index].status, "inactive") == 0) {
-                    printf("Warning: Account is inactive. Transaction cannot be completed.\n");
-                } else {
-                    printf("Enter deposit amount: ");
-                    scanf("%lf", &amount);
-                    deposit(&accounts[index], amount);
-                }
-            }
-        }
-        else if (choice == 9) break;
-
-        else if (choice == 10) transfer(accounts, totalAccounts);
-            else if (choice == 11) report();
-
-        else printf("Invalid choice.\n");
-
-    } while (choice != 11);
-
-    return 0;
+    printf("\n--- Sorted Accounts ---\n");
+    for (int i = 0; i < total; i++) {
+        displayAccount(accounts[i]);
+    }
 }
 
 
+int main() {
+    int choice;
+    do {
+        printf("\nInitial Menu:\n");
+        printf("1. Login\n");
+        printf("2. Quit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            FILE *fp;
+            char fileUser[50], filePass[50];
+            char username[50], userpass[50];
+            int found = 0;
+
+            fp = fopen("user.txt", "r");
+            if (!fp) {
+                printf("Error opening users file.\n");
+                return 1;
+            }
+
+            printf("Enter Username: ");
+            scanf("%s", username);
+            printf("Enter Password: ");
+            scanf("%s", userpass);
+
+            while (fscanf(fp, "%s %s", fileUser, filePass) != EOF) {
+                if (strcmp(username, fileUser) == 0 && strcmp(userpass, filePass) == 0) {
+                    found = 1;
+                    break;
+                }
+            }
+            fclose(fp);
+
+            if (!found) {
+                printf("Invalid username or password.\n");
+                continue;
+            }
+
+            printf("Login successful!\n");
+
+            Account accounts[MAX_ACCOUNTS];
+            int totalAccounts = loadAccounts(accounts);
+            printf("%d accounts loaded successfully.\n", totalAccounts);
+
+            int subChoice;
+            do {
+                printf("\nMain Menu:\n");
+                printf("1. Add Account\n");
+                printf("2. Delete Account\n");
+                printf("3. Modify Account\n");
+                printf("4. Search Account\n");
+                printf("5. Advanced Search\n");
+                printf("6. Change Account Status\n");
+                printf("7. Withdraw\n");
+                printf("8. Deposit\n");
+                printf("9. Transfer\n");
+                printf("10. Report (Last 5 Transactions)\n");
+                printf("11. Print (Sorted)\n");
+                printf("12. Quit\n");
+                printf("Enter choice: ");
+                scanf("%d", &subChoice);
+
+                if (subChoice == 1) addAccount(accounts, &totalAccounts);
+                else if (subChoice == 2) deleteAccount(accounts, &totalAccounts);
+                else if (subChoice == 3) modifyAccount(accounts, totalAccounts);
+                else if (subChoice == 4) queryAccount(accounts, totalAccounts);
+                else if (subChoice == 5) advancedSearch(accounts, totalAccounts);
+                else if (subChoice == 6) changeStatus(accounts, totalAccounts);
+                else if (subChoice == 7) {
+                    char accNum[20]; double amount; int day, month, year;
+                    printf("Enter account number: "); scanf("%s", accNum);
+                    int index = -1;
+                    for (int i = 0; i < totalAccounts; i++) {
+                        if (strcmp(accounts[i].accountNumber, accNum) == 0) { index = i; break; }
+                    }
+                    if (index == -1) printf("Account not found.\n");
+                    else {
+                        printf("Enter withdrawal amount: "); scanf("%lf", &amount);
+                        printf("Enter today date (day month year): "); scanf("%d %d %d", &day, &month, &year);
+                        withdraw(&accounts[index], amount, day, month, year);
+                    }
+                }
+                else if (subChoice == 8) {
+                    char accNum[20]; double amount;
+                    printf("Enter account number: "); scanf("%s", accNum);
+                    int index = -1;
+                    for (int i = 0; i < totalAccounts; i++) {
+                        if (strcmp(accounts[i].accountNumber, accNum) == 0) { index = i; break; }
+                    }
+                    if (index == -1) printf("Account not found.\n");
+                    else {
+                        printf("Enter deposit amount: "); scanf("%lf", &amount);
+                        deposit(&accounts[index], amount);
+                    }
+                }
+                else if (subChoice == 9) transfer(accounts, totalAccounts);
+                else if (subChoice == 10) report();
+                else if (subChoice == 11) print(accounts, totalAccounts);
+                else if (subChoice == 12) break;
+                else printf("Invalid choice.\n");
+
+                if (subChoice != 12) {
+                    int back;
+                    printf("\n1. Back to Menu\n2. Quit\nEnter choice: ");
+                    scanf("%d", &back);
+                    if (back == 2) break;
+                }
+
+            } while (subChoice != 12);
+        }
+        else if (choice == 2) break;
+        else printf("Invalid choice.\n");
+
+    } while (choice != 2);
+
+    return 0;
+}
