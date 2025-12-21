@@ -185,7 +185,6 @@ void addAccount(Account accounts[], int *total) {
     } else {
         printf("Error: Could not update account.txt\n");
     }
-        // Create transaction file and log initial balance
     char histFile[30];
     strcpy(histFile, newAcc.accountNumber);
     strcat(histFile, ".txt");
@@ -393,7 +392,6 @@ void withdraw(Account *acc, double amount, int day, int month, int year) {
     acc->balance -= amount;
     acc->dailyWithdrawn += amount;
     printf("Withdrawal successful! New balance for %s account is: %.2f\n", acc->name, acc->balance);
-        // Log withdrawal
     char filename[30];
     strcpy(filename, acc->accountNumber);
     strcat(filename, ".txt");
@@ -417,7 +415,6 @@ void deposit(Account *acc, double amount) {
 
     acc->balance += amount;
     printf("Deposit successful! New balance for %s account is: %.2f\n", acc->name, acc->balance);
-        // Log deposit
     char filename[30];
     strcpy(filename, acc->accountNumber);
     strcat(filename, ".txt");
@@ -431,8 +428,6 @@ void deposit(Account *acc, double amount) {
 void transfer(Account accounts[], int total) {
     char senderAcc[20], receiverAcc[20];
     double amount;
-
-    // Ask for sender and receiver account numbers
     printf("Enter sender account number: ");
     scanf("%s", senderAcc);
 
@@ -440,16 +435,12 @@ void transfer(Account accounts[], int total) {
     scanf("%s", receiverAcc);
 
     int senderIndex = -1, receiverIndex = -1;
-
-    // Find sender account
     for (int i = 0; i < total; i++) {
         if (strcmp(accounts[i].accountNumber, senderAcc) == 0) {
             senderIndex = i;
             break;
         }
     }
-
-    // Find receiver account
     for (int i = 0; i < total; i++) {
         if (strcmp(accounts[i].accountNumber, receiverAcc) == 0) {
             receiverIndex = i;
@@ -516,7 +507,6 @@ void transfer(Account accounts[], int total) {
     }
 
     fclose(fp);
-        // Log transfer in sender file
     char senderFile[30];
     strcpy(senderFile, accounts[senderIndex].accountNumber);
     strcat(senderFile, ".txt");
@@ -526,8 +516,6 @@ void transfer(Account accounts[], int total) {
                 amount, accounts[receiverIndex].accountNumber, accounts[senderIndex].balance);
         fclose(logSender);
     }
-
-    // Log transfer in receiver file
     char receiverFile[30];
     strcpy(receiverFile, accounts[receiverIndex].accountNumber);
     strcat(receiverFile, ".txt");
