@@ -944,7 +944,7 @@ int main()
                         printf("Enter today date (day month year): ");
                         scanf("%d %d %d", &day, &month, &year);
                         withdraw(&accounts[index], amount, day, month, year);
-                        withdraw(&accounts[index], amount, day, month, year);
+                       
                         int choiceSave;
                         printf("Do you want to save changes? (1 = Yes, 2 = No): ");
                         scanf("%d", &choiceSave);
