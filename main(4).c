@@ -994,15 +994,19 @@ int main()
                         }
                     }
                 }
-                else if (subChoice == 9) transfer(accounts, totalAccounts);
-                else if (subChoice == 10) report();
-                else if (subChoice == 11) print(accounts, totalAccounts);
-                else if (subChoice == 12) break;
-                if (subChoice == 13)
-                {
-                    saveAccounts(accounts, totalAccounts);
-                }
-                else printf("Invalid choice.\n");
+            else if (subChoice == 9) transfer(accounts, totalAccounts);
+else if (subChoice == 10) report();
+else if (subChoice == 11) print(accounts, totalAccounts);
+else if (subChoice == 12) break;
+else if (subChoice == 13)
+{
+    saveAccounts(accounts, totalAccounts);
+}
+else
+{
+    printf("Invalid choice.\n");
+}
+
 
 
                 if (subChoice != 13)
