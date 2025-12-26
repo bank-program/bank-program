@@ -124,6 +124,7 @@ void toLower(char *str)
         str[i] = tolower(str[i]);
     }
 }
+void saveAccounts(Account accounts[], int total);
 
 
 
@@ -164,7 +165,7 @@ int validatePositive(double value)
 
 int loadAccounts(Account accounts[])
 {
-    FILE *fp = fopen("account.txt", "r");
+    FILE *fp = fopen("accounts.txt", "r");
     if (!fp) return 0;
 
     int total = 0;
@@ -1012,26 +1013,36 @@ void saveAccounts(Account accounts[], int total)
     fclose(fp);
     printf("Accounts saved successfully!\n");
 }
+int getIntChoice()
+{
+    char buffer[50];
+    int choice;
+    if (scanf("%49s", buffer) != 1) return -1;
+    char *endptr;
+    choice = strtol(buffer, &endptr, 10);
+    if (*endptr != '\0') return -1;
+    return choice;
+}
 void deleteMultiple(Account accounts[], int *total)
 {
     int option;
     printf("\n--- Delete Multiple Accounts ---\n");
     printf("1. By Date (YYYY-MM)\n");
-    printf("2. Inactive Accounts (>3 months, balance = 0)\n");
+    printf("2. Inactive Accounts (>90 days, balance = 0)\n");
     printf("Enter choice: ");
     scanf("%d", &option);
 
     int deletedCount = 0;
 
-    if (option == 1)
-    {
+    if (option == 1) {
         int year, month;
         printf("Enter date (YYYY-MM): ");
         scanf("%d-%d", &year, &month);
 
-        for (int i = 0; i < *total; )
-        {
-            if (accounts[i].dob.year == year && accounts[i].dob.month == month)
+        for (int i = 0; i < *total; ) {
+            if (accounts[i].dob.year == year &&
+                accounts[i].dob.month == month &&
+                accounts[i].balance == 0)
             {
                 for (int j = i; j < *total - 1; j++)
                     accounts[j] = accounts[j + 1];
@@ -1043,23 +1054,22 @@ void deleteMultiple(Account accounts[], int *total)
         }
 
         if (deletedCount == 0)
-            printf("No accounts found for given month/year.\n");
+            printf("No accounts found for given month/year with zero balance.\n");
         else
             printf("Deletion complete. %d account(s) deleted.\n", deletedCount);
     }
-    else if (option == 2)
-    {
-        int todayMonth, todayYear;
-        printf("Enter today’s date (MM YYYY): ");
-        scanf("%d %d", &todayMonth, &todayYear);
+    else if (option == 2) {
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
 
-        for (int i = 0; i < *total; )
-        {
-            if (strcmp(accounts[i].status, "inactive") == 0 && accounts[i].balance == 0)
+        for (int i = 0; i < *total; ) {
+            if (strcmp(accounts[i].status, "inactive") == 0 &&
+                accounts[i].balance == 0)   // ✅ balance must be zero
             {
-                int diffMonths = (todayYear - accounts[i].lastYear) * 12 + (todayMonth - accounts[i].lastMonth);
-                if (diffMonths > 3)
-                {
+                int diffMonths = (tm.tm_year + 1900 - accounts[i].lastYear) * 12 +
+                                 (tm.tm_mon + 1 - accounts[i].lastMonth);
+
+                if (diffMonths > 3) {  // ~90 days
                     for (int j = i; j < *total - 1; j++)
                         accounts[j] = accounts[j + 1];
                     (*total)--;
@@ -1073,31 +1083,18 @@ void deleteMultiple(Account accounts[], int *total)
         if (deletedCount == 0)
             printf("No inactive accounts eligible for deletion.\n");
         else
-            printf("Deletion complete. %d account(s) deleted\n", deletedCount);
+            printf("Deletion complete. %d account(s) deleted.\n", deletedCount);
     }
-    else
-    {
+    else {
         printf("Invalid choice.\n");
         return;
     }
 
-    if (deletedCount > 0)
-    {
+    if (deletedCount > 0) {
         saveAccounts(accounts, *total);
     }
 }
 
-
-int getIntChoice()
-{
-    char buffer[50];
-    int choice;
-    if (scanf("%49s", buffer) != 1) return -1;
-    char *endptr;
-    choice = strtol(buffer, &endptr, 10);
-    if (*endptr != '\0') return -1;
-    return choice;
-}
 
 int main()
 {
@@ -1160,9 +1157,7 @@ int main()
             msg_ok("Login successful!");
 
             Account accounts[MAX_ACCOUNTS];
-            //printf("--");
             int totalAccounts = loadAccounts(accounts);
-            //printf("--");
             printf("%s%d%s accounts loaded successfully.\n", FG_GREEN, totalAccounts, RESET);
 
             int subChoice;
@@ -1181,7 +1176,8 @@ int main()
                 printf("%s10.%s Report (Last 5 Transactions)\n", FG_BLUE, RESET);
                 printf("%s11.%s Print (Sorted)\n", FG_BLUE, RESET);
                 printf("%s12.%s Save Accounts\n", FG_BLUE, RESET);
-                printf("%s13.%s Quit\n", FG_BLUE, RESET);
+                printf("%s13.%s Delete Multiple Accounts\n", FG_BLUE, RESET);
+                printf("%s14.%s Quit\n", FG_BLUE, RESET);
                 prompt("Enter choice: ");
 
                 subChoice = getIntChoice();
@@ -1218,7 +1214,7 @@ int main()
                         printf("Enter amount to withdraw: ");
                         scanf("%lf", &amount);
                         withdraw(&accounts[index], amount);
-                          int choiceSave;
+                        int choiceSave;
                         printf("Do you want to save changes? (1 = Yes, 2 = No): ");
                         scanf("%d", &choiceSave);
                         if (choiceSave == 1)
@@ -1232,52 +1228,50 @@ int main()
                         }
                     }
                 }
-
                 else if (subChoice == 8)
                 {
-
-                        char accNum[20];
-                        double amount;
-                        printf("Enter account number: ");
-                        scanf("%s", accNum);
-                        int index = -1;
-                        for (int i = 0; i < totalAccounts; i++)
+                    char accNum[20];
+                    double amount;
+                    printf("Enter account number: ");
+                    scanf("%s", accNum);
+                    int index = -1;
+                    for (int i = 0; i < totalAccounts; i++)
+                    {
+                        if (strcmp(accounts[i].accountNumber, accNum) == 0)
                         {
-                            if (strcmp(accounts[i].accountNumber, accNum) == 0)
-                            {
-                                index = i;
-                                break;
-                            }
+                            index = i;
+                            break;
                         }
-                        if (index == -1) printf("Account not found.\n");
+                    }
+                    if (index == -1) printf("Account not found.\n");
+                    else
+                    {
+                        printf("Enter deposit amount: ");
+                        scanf("%lf", &amount);
+                        deposit(&accounts[index], amount);
+                        int choiceSave;
+                        printf("Do you want to save changes? (1 = Yes, 2 = No): ");
+                        scanf("%d", &choiceSave);
+                        if (choiceSave == 1)
+                        {
+                            saveAccounts(accounts, totalAccounts);
+                            printf("Changes confirmed and saved.\n");
+                        }
                         else
                         {
-                            printf("Enter deposit amount: ");
-                            scanf("%lf", &amount);
-                            deposit(&accounts[index], amount);
-                            int choiceSave;
-                            printf("Do you want to save changes? (1 = Yes, 2 = No): ");
-                            scanf("%d", &choiceSave);
-                            if (choiceSave == 1)
-                            {
-                                saveAccounts(accounts, totalAccounts);
-                                printf("Changes confirmed and saved.\n");
-                            }
-                            else
-                            {
-                                printf("Changes discarded (not saved).\n");
-                            }
-
+                            printf("Changes discarded (not saved).\n");
+                        }
                     }
                 }
                 else if (subChoice == 9) transfer(accounts, totalAccounts);
                 else if (subChoice == 10) report();
                 else if (subChoice == 11) print(accounts, totalAccounts);
                 else if (subChoice == 12) saveAccounts(accounts, totalAccounts);
+                else if (subChoice == 13) deleteMultiple(accounts, &totalAccounts);
                 else if (subChoice == -1) printf("Invalid choice.\n");
 
             }
-            while (subChoice != 13);
+            while (subChoice != 14);
         }
         else if (strcmp(buffer, "2") == 0)
         {
