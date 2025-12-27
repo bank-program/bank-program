@@ -1,0 +1,91 @@
+# depslib dependency file v1.0
+1766793585 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\console.c
+	<stdio.h>
+	"console.h"
+	<windows.h>
+
+1766793585 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\console.h
+
+1766793628 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\main.c
+	<stdio.h>
+	<string.h>
+	<strings.h>
+	"config.h"
+	"types.h"
+	"console.h"
+	"validate.h"
+	"storage.h"
+	"search.h"
+	"ops.h"
+	"trans.h"
+	"sort.h"
+
+1766782340 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\config.h
+
+1766782372 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\types.h
+
+1766782389 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\validate.h
+
+1766782401 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\storage.h
+	"types.h"
+
+1766782502 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\search.h
+	"types.h"
+
+1766782450 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\ops.h
+	"types.h"
+
+1766782465 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\trans.h
+	"types.h"
+
+1766782433 c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\include\sort.h
+	"types.h"
+
+1766782865 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\ops.c
+	<stdio.h>
+	<string.h>
+	<time.h>
+	"types.h"
+	"validate.h"
+	"storage.h"
+	"ops.h"
+
+1766782743 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\search.c
+	<stdio.h>
+	<string.h>
+	"types.h"
+	"validate.h"
+	"search.h"
+
+1766782912 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\sort.c
+	<stdio.h>
+	<string.h>
+	"types.h"
+	"sort.h"
+
+1766782729 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\storage.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	"types.h"
+	"storage.h"
+
+1766782899 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\trans.c
+	<stdio.h>
+	<string.h>
+	<time.h>
+	"types.h"
+	"config.h"
+	"storage.h"
+	"trans.h"
+
+1766782674 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\types.c
+	"types.h"
+
+1766782649 source:c:\users\roaa\onedrive\desktop\finalbank\bankkkkkkk\src\validate.c
+	<string.h>
+	<ctype.h>
+	<stdlib.h>
+	<stdio.h>
+	"validate.h"
+
