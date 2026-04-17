@@ -1,0 +1,129 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX 100
+typedef struct
+{
+ char data;
+ struct node*next;
+}node;
+typedef struct
+{
+    node*top;
+}stack;
+stack*initialize()
+{
+ stack*s=malloc(sizeof(stack));
+ s->top=NULL;
+ return s;
+}
+float pop(stack*s)
+{
+   node*n=s->top;
+   int value=n->data;
+   s->top=n->next;
+   free(n);
+    return value;
+}
+void push(stack*s,int x)
+{
+    node*n=malloc(sizeof(node));
+    n->data=x;
+    n->next=s->top;
+    s->top=n;
+}
+char peek(stack *s) {
+    if (s->top == NULL) {
+        return '\0';
+    }
+    return s->top->data;
+}
+
+int isempty(stack*s)
+{
+    if(s->top==NULL)
+        return 1;
+    else return 0;
+}
+int priority(char op) {
+    switch (op) {
+        case '^': return 3;
+        case '*':
+        case '/':
+        case '%': return 2;
+        case '+':
+        case '-': return 1;
+        case '(': return 0;
+        default: return -1;
+    }
+}
+char* infixTopostfix(char *infix) {
+    int i;
+    int j=0;
+    stack*s=initialize();
+    char *postfix = malloc(strlen(infix) *2);
+
+     for (int i = 0; i < strlen(infix); i++) {
+        char c = infix[i];
+        if (c == '-' && (i == 0 || infix[i-1] == '(' || strchr("+-*/%^", infix[i-1]) != NULL)) {
+            postfix[j++] = '-';
+            i++;
+            while (i < strlen(infix) && (isdigit(infix[i]) || infix[i] == '.')) {
+                postfix[j++] = infix[i++];
+            }
+            postfix[j++] = ' ';
+            i--;
+        }
+
+        else if (isdigit(c) || (c == '.' && i > 0 && isdigit(infix[i-1]))) {
+            while (i < strlen(infix) && (isdigit(infix[i]) || infix[i] == '.')) {
+                postfix[j++] = infix[i++];
+            }
+            postfix[j++] = ' ';
+            i--;
+        }
+
+        else if (c == '(') {
+            push(s, c);
+        }
+
+       else if (c == ')') {
+            while (!isempty(s) && peek(s) != '(') {
+                postfix[j++] = pop(s);
+                postfix[j++] = ' ';
+            }
+            pop(s);
+        }
+        else {
+            while (!isempty(s) && priority(peek(s)) >= priority(c)) {
+                postfix[j++] = pop(s);
+                postfix[j++] = ' ';
+            }
+            push(s, c);
+        }
+    }
+
+    while (!isempty(s)) {
+        postfix[j++] = pop(s);
+        postfix[j++] = ' ';
+    }
+
+    postfix[j] = '\0';
+    free(s);
+    return postfix;
+}
+
+
+
+int main()
+{
+    char infix[MAX];
+    printf("Enter infix expression: ");
+    scanf("%s", infix);
+
+    char *postfix = infixTopostfix(infix);
+    printf("Postfix expression: %s\n", postfix);
+
+    free(postfix);
+    return 0;
+}
+
